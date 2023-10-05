@@ -1,26 +1,30 @@
-# import datetime
+import datetime
+import json
 
 
 class activity:
-    def __init__(self, name, space, starttime, stoptime,):
+    def __init__(self, name, space, starttime, until):
         self.name = name
         self.space = space
-        self.starttime = starttime
-        self.stoptime = stoptime
+        self.date = starttime.date()
+        self.time = starttime.time()
+        self.until = until
         self.people = {}
 
     def __str__(self):
-        # if self.starttime.date == self.stoptime.date:
         self_str = (f"{self.name} i {self.space}\n"
-                    f"{self.starttime.strftime('%b %e %Y')}\n"
-                    f"kl {self.starttime.strftime('%H:%M')} - "
-                    f"{self.stoptime.strftime('%H:%M')}\n")
+                    f"{self.date.strftime('%b %e %Y')}\n"
+                    f"kl {self.time.strftime('%H:%M')} - "
+                    f"{self.until.strftime('%H:%M')}\n")
         if len(self.people) > 0:
             for keys in self.people:
                 self_str += f"{keys}(s): \n"
                 for values in self.people[keys]:
                     self_str += f"\t{values}\n"
         return self_str
+
+    def get_jsonmembers(self):
+        return json.dumps(self.people)
 
     def add_role(self):
         while True:

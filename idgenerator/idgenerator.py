@@ -61,6 +61,5 @@ def create_person():
 
     return new_person
 
-
-for x in range(100):
-    sqlconnect.loadpersons(create_person())
+# for x in range(100):
+    # sqlconnect.load_persons(create_person())

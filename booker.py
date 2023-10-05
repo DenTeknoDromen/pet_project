@@ -2,11 +2,12 @@ import datetime
 import activity
 import space
 import pickle
+from idgenerator import sqlconnect
 
 
 lst_commands = ["show_actv", "show_spaces", "add_actv", "add_space",
                 "clear_actv", "clear_space", "list_space", "list_name",
-                "show_commands", "exit"]
+                "show_commands", "exit", "list_date"]
 lst_activities = []
 with open("savedactivities.txt", "rb") as f:
     try:
@@ -34,11 +35,11 @@ def checkconflict(new_activity):
 def checkvalid(msg):
     print(msg)
     today = datetime.datetime.now()
-    date = input("Enter date (mm/dd): ")
+    date = input("Enter date (dd/mm): ")
     time = input("Enter time (hh:mm): ")
     try:
-        m = int(date[0:2])
-        d = int(date[3:5])
+        d = int(date[0:2])
+        m = int(date[3:5])
         h = int(time[0:2])
         mi = int(time[3:5])
         returndate = datetime.datetime(today.year, m, d, h, mi)
@@ -48,6 +49,21 @@ def checkvalid(msg):
         returndate = checkvalid("Date has already passed, please try again")
 
     return returndate
+
+def checkvaliddate():
+    today = datetime.date.today()
+    date = input("Enter date (dd/mm): ")
+    try:
+        d = int(date[0:2])
+        m = int(date[3:5])
+        returndate = datetime.date(today.year, m, d)
+    except ValueError:
+        returndate = checkvalid("Invalid input, please try again")
+    if returndate < today:
+        returndate = checkvalid("Date has already passed, please try again")
+
+    return returndate
+
 
 
 def checkspaces():
@@ -62,12 +78,13 @@ def newbooking():
         name = input("Enter name: ")
         space = checkspaces()
         starttime = checkvalid("Enter starttime: ")
-        stoptime = checkvalid("Enter stoptime: ")
-        if starttime > stoptime:
+        until = checkvalid("Enter stoptime: ")
+
+        if starttime > until:
             print("Invalid stoptime, please try again")
-            continue
+            continue   
         new_activity = activity.activity(name, dict_spaces[space],
-                                         starttime, stoptime)
+                                         starttime, until)
         if checkconflict(new_activity):
             lst_activities.append(new_activity)
         else:
@@ -76,6 +93,7 @@ def newbooking():
         new_activity.set_people()
         break
     print("-" * 30)
+    sqlconnect.load_activity(new_activity)
 
 
 def newspace():
@@ -87,12 +105,13 @@ def newspace():
 def listspace():
     indata = input("Enter name of space: ").casefold()
     print("-" * 30)
-    for x in lst_activities:
-        if (x.space.name.casefold() in indata or
-                indata in x.space.name.casefold()):
-            print(x)
-            print("-" * 30)
-
+    # for x in lst_activities:
+    #     if (x.space.name.casefold() in indata or
+    #             indata in x.space.name.casefold()):
+    #         print(x)
+    #         print("-" * 30)
+    sqlconnect.list_space(indata)
+    
 
 def listnames():
     indata = input("Enter name: ").casefold()
@@ -142,6 +161,8 @@ while True:
         show_commands()
     elif indata == lst_commands[9]:
         break
+    elif indata == lst_commands[10]:
+        sqlconnect.list_date(checkvaliddate())
 
 with open("savedactivities.txt", "wb") as f:
     pickle.dump(lst_activities, f)
